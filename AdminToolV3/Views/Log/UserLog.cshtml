@@ -1,0 +1,287 @@
+﻿@using AdminToolV3.CommonClass;
+@using AdminToolV3.Models.Home;
+
+@{
+    ViewData["Title"] = "유저 로그";
+
+    if (ViewBag.ControlData == null)
+    {
+        NLogManager.Instance.Log("UserLog.cshtml / ViewBag.ControlData is null");
+        return;
+    }
+
+    if (ViewBag.PacketLogList == null)
+    {
+        NLogManager.Instance.Log("UserLog.cshtml / ViewBag.PacketLogList is null");
+        return;
+    }
+
+    if (ViewBag.WIDList == null)
+    {
+        NLogManager.Instance.Log("UserLog.cshtml / ViewBag.WIDList is null");
+        return;
+    }
+
+    if (ViewBag.SIDList == null)
+    {
+        NLogManager.Instance.Log("UserLog.cshtml / ViewBag.SIDList is null");
+        return;
+    }
+
+    if (ViewBag.UTCList == null)
+    {
+        NLogManager.Instance.Log("UserLog.cshtml / ViewBag.UTCList is null");
+        return;
+    }
+
+    ControlData controlData = ViewBag.ControlData;
+    int searchType = controlData.SearchType;
+}
+
+<html>
+<head>
+    <!-- datepicker -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.5.0/css/bootstrap-datepicker3.min.css">
+    <script type='text/javascript' src='https://code.jquery.com/jquery-1.8.3.js'></script>
+    <script type='text/javascript' src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.5.0/js/bootstrap-datepicker.min.js"></script>
+    <!-- datepicker -->
+
+    <script>
+        // datepicker
+        $(function () {
+            $('.input-group.date').children('#inputdate').datepicker({
+                calendarWeeks: false,
+                todayHighlight: true,
+                autoclose: true,
+                format: "yyyy-mm-dd",
+                language: "kr"
+            });
+        });
+        // datepicker
+    </script>
+</head>
+<body>
+    <form class="form" method="get" asp-controller="Log" asp-action="UserLog" onsubmit="return checkInputSubmit();">
+        <div class="row pb-3">
+            <div class="col-auto">
+                <div class="form-group">
+                    @*<label for="exampleFormControlSelect3">UTC</label>*@
+                    <select class="form-control" id="exampleFormControlSelect3" name="UtcTime">
+                        @if (ViewBag.UTCList != null)
+                        {
+                            foreach (var item in ViewBag.UTCList)
+                            {
+                                if (item.Equals(controlData.UtcTime))
+                                {
+                                    <option value="@item" selected>@item</option>
+                                }
+                                else
+                                {
+                                    <option value="@item">@item</option>
+                                }
+                            }
+                        }
+                    </select>
+                </div>
+            </div>
+
+            <div class="col-3">
+                <div class="input-group date">
+                    <input type="text" id="inputdate" class="form-control" name="Date1" value="@controlData.Date1" placeholder="시작 날짜" autocomplete="off">
+                    <span class="input-group-addon"></span>
+                    <span class="input-group-text">~</span>
+                    <input type="text" id="timeInput1" class="form-control" name="Time1" value="@controlData.Time1" />
+                </div>
+            </div>
+
+            <div class="col-3">
+                <div class="input-group date">
+                    <input type="text" id="inputdate" class="form-control" name="Date2" value="@controlData.Date2" placeholder="종료 날짜" autocomplete="off">
+                    <span class="input-group-addon"></span>
+                    <span class="input-group-text">~</span>
+                    <input type="text" id="timeInput2" class="form-control" name="Time2" value="@controlData.Time2" />
+                </div>
+            </div>
+
+            <div class="col-3">
+                <input type="text" class="form-control" name="PID" value="@controlData.PID" placeholder="PID" />
+            </div>
+            <div class="col-auto">
+                <input class="btn btn-info float-right" type="submit" value="검색" />
+            </div>
+            <div class="col-auto">
+                <a href="@Url.Action("userlog","log")" style="font-size: 1.5em;">초기화</a>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-auto">
+                <label for="exampleFormControlSelect1">Page</label>
+                <div class="dropdown">
+                    <button type="button" class="btn btn-outline-primary dropdown-toggle-split" data-toggle="dropdown">@controlData.RowLimit</button>
+                    <div class="dropdown-menu">
+                        <a class="dropdown-item" href="@Url.Action("userlog","log", new ControlData(controlData, 1, 1, 10))">10</a>
+                        <a class="dropdown-item" href="@Url.Action("userlog","log", new ControlData(controlData, 1, 1, 50))">50</a>
+                        <a class="dropdown-item" href="@Url.Action("userlog","log", new ControlData(controlData, 1, 1, 100))">100</a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-auto">
+                <div class="form-group">
+                    <label for="exampleFormControlSelect1">WID</label>
+                    <select class="form-control" id="exampleFormControlSelect1" name="WID">
+                        @if (ViewBag.WIDList != null)
+                        {
+                            foreach (var item in ViewBag.WIDList)
+                            {
+                                if (item == controlData.WID)
+                                {
+                                    <option value="@item" selected>@item</option>
+                                }
+                                else
+                                {
+                                    <option value="@item">@item</option>
+                                }
+                            }
+                        }
+                    </select>
+                </div>
+            </div>
+            <div class="col-auto">
+                <div class="form-group">
+                    <label for="exampleFormControlSelect2">SID</label>
+                    <select class="form-control" id="exampleFormControlSelect2" name="SID">
+                        @if (ViewBag.SIDList != null)
+                        {
+                            foreach (var item in ViewBag.SIDList)
+                            {
+                                if (item == controlData.SID)
+                                {
+                                    <option value="@item" selected>@item</option>
+                                }
+                                else
+                                {
+                                    <option value="@item">@item</option>
+                                }
+                            }
+                        }
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <input type="hidden" name="SearchType" value=1>
+        <input type="hidden" name="RowLimit" value=@controlData.RowLimit>
+    </form>
+
+    <hr />
+
+    <table class="table table-striped table-bordered table-hover">
+        <thead class="thead-dark">
+            <tr>
+                @*<th>UTCNowTick</th>*@
+                <th>CreateTime</th>
+                <th>PID</th>
+                <th>WID</th>
+                <th>SID</th>
+                <th>PacketName</th>
+                <th>ErrorCode</th>
+                <th>JsonReqData</th>
+                <th>JsonDetailData</th>
+            </tr>
+        </thead>
+        <tbody>
+            @if (ViewBag.PacketLogList != null)
+            {
+                foreach (var item in ViewBag.PacketLogList)
+                {
+                    <tr>
+                        @*<td>@item.UTCNowTick</td>*@
+                        <td>@item.UTCCreateTime</td>
+                        <td>@item.PID</td>
+                        <td>@item.WID</td>
+                        <td>@item.SID</td>
+                        <td>@item.PacketName</td>
+                        <td>@item.ErrorCode</td>
+                        <td>@item.JsonReqData</td>
+                        <td>@item.JsonDetailData</td>
+                    </tr>
+                }
+            }
+        </tbody>
+    </table>
+
+    <hr />
+
+    <nav aria-label="...">
+        <ul class="pagination">
+            @if (controlData.StartPage == 1)
+            {
+                <li class="page-item disabled"><a class="page-link">이전</a></li>
+            }
+            else
+            {
+                <li class="page-item"><a class="page-link" href="@Url.Action("userlog","log", new ControlData(controlData.StartPage - controlData.PageLimit, controlData.StartPage - controlData.PageLimit, controlData.MaxPage, controlData.PageLimit, searchType, controlData.Date1, controlData.Date2, controlData.Time1, controlData.Time2, controlData.PID, controlData.RowLimit, controlData.WID, controlData.SID, controlData.UtcTime))">이전</a></li>
+            }
+
+            @for (int i = 0; i < controlData.MaxPage; i++)
+            {
+                if (controlData.CurPage == controlData.StartPage + i)
+                {
+                    <li class="page-item active"><span class="page-link">@(controlData.CurPage)<span class="sr-only">(current)</span></span></li>
+                }
+                else
+                {
+                    <li class="page-item"><a class="page-link" href="@Url.Action("userlog","log", new ControlData(controlData.StartPage, controlData.StartPage + i, controlData.MaxPage, controlData.PageLimit, searchType, controlData.Date1, controlData.Date2, controlData.Time1, controlData.Time2, controlData.PID, controlData.RowLimit, controlData.WID, controlData.SID, controlData.UtcTime))">@(controlData.StartPage + i)</a></li>
+                }
+
+                if ((i + 1) >= controlData.PageLimit)
+                {
+                    break;
+                }
+            }
+
+            @if (((controlData.StartPage - 1) + controlData.PageLimit) >= controlData.MaxPage)
+            {
+                <li class="page-item disabled"><a class="page-link">다음</a></li>
+            }
+            else
+            {
+                <li class="page-item"><a class="page-link" href="@Url.Action("userlog","log", new ControlData(controlData.StartPage + controlData.PageLimit, controlData.StartPage + controlData.PageLimit, controlData.MaxPage, controlData.PageLimit, searchType, controlData.Date1, controlData.Date2, controlData.Time1, controlData.Time2, controlData.PID, controlData.RowLimit, controlData.WID, controlData.SID, controlData.UtcTime))">다음</a></li>
+            }
+        </ul>
+    </nav>
+    
+    <script>
+        // datepicker.kr.js
+        ; (function ($) {
+            $.fn.datepicker.dates['kr'] = {
+                days: ["일요일", "월요일", "화요일", "수요일", "목요일", "금요일", "토요일", "일요일"],
+                daysShort: ["일", "월", "화", "수", "목", "금", "토", "일"],
+                daysMin: ["일", "월", "화", "수", "목", "금", "토", "일"],
+                months: ["1월", "2월", "3월", "4월", "5월", "6월", "7월", "8월", "9월", "10월", "11월", "12월"],
+                monthsShort: ["1월", "2월", "3월", "4월", "5월", "6월", "7월", "8월", "9월", "10월", "11월", "12월"]
+            };
+        }(jQuery));
+        // datepicker.kr.js
+
+        function checkInputSubmit() {
+            var timeInput1 = document.getElementById('timeInput1');
+            var timeInput2 = document.getElementById('timeInput2');
+            let pattern = /^(0[0-9]|1[0-9]|2[0-3]):([0-5][0-9]):([0-5][0-9])$/;
+            if (pattern.test(timeInput1.value) == false) {
+                alert('시작 날짜의 시간 설정이 잘못되었습니다.');
+                return false;
+            }
+
+            if (pattern.test(timeInput2.value) == false) {
+                alert('종료 날짜의 시간 설정이 잘못되었습니다.');
+                return false;
+            }
+
+            return true;
+        }
+    </script>
+</body>
+</html>
